@@ -21,7 +21,6 @@
 <body>
 
     <header>
-
         <nav class="flex justify-between items-center w-11/12 mx-auto py-4 border-b ">
             <div class="logo w-[100px]">
                 <img src=" ./assets/Logo.png" alt="">
@@ -44,11 +43,14 @@
                 <button class="btn bg-red-500 text-white">Sort</button>
             </div>
         </nav>
-
+        <!-- dynamically added categories -->
+        <section id="categories"></section>
     </header>
 
     <main>
-        <section id="categories"></section>
+        <!-- dynamically added videos  -->
+        <section id="videos" class="w-11/12 mx-auto py-3 grid grid-cols-1 md:grid-cols-2 gap-3 lg:grid-cols-4">
+        </section>
 
     </main>
 
