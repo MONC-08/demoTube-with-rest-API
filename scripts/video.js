@@ -16,11 +16,16 @@ const displayCategories = (categories) => {
     const categoryContainer = document.getElementById('categories');
 
     categories.map((item) => {
-        const button = document.createElement('button');
-        button.classList = 'btn';
-        button.innerText = item.category;
+        // console.log(item)
+        const buttonContainer = document.createElement('div');
+        buttonContainer.innerHTML = `
+
+        <button id="btn-${item.category_id}" class="btn category-btn" onclick="loadCategoryVideos(${item.
+                category_id})">${item.category}</button>
+
+        `
         categoryContainer.classList = 'flex justify-center gap-4 py-3';
-        categoryContainer.appendChild(button);
+        categoryContainer.appendChild(buttonContainer);
     })
 }
 
@@ -37,42 +42,83 @@ const loadVideos = async () => {
     }
 }
 
+// load category wise videos
+const loadCategoryVideos = async (id) => {
 
-// {
-//     "category_id": "1001",
-//     "video_id": "aaaa",
-//     "thumbnail": "https://i.ibb.co/L1b6xSq/shape.jpg",
-//     "title": "Shape of You",
-//     "authors": [
-//         {
-//             "profile_picture": "https://i.ibb.co/D9wWRM6/olivia.jpg",
-//             "profile_name": "Olivia Mitchell",
-//             "verified": ""
-//         }
-//     ],
-//     "others": {
-//         "views": "100K",
-//         "posted_date": "16278"
-//     },
-//     "description": "Dive into the rhythm of 'Shape of You,' a captivating track that blends pop sensibilities with vibrant beats. Created by Olivia Mitchell, this song has already gained 100K views since its release. With its infectious melody and heartfelt lyrics, 'Shape of You' is perfect for fans looking for an uplifting musical experience. Let the music take over as Olivia's vocal prowess and unique style create a memorable listening journey."
-// }
+    const res = await fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`);
+    const data = await res.json();
+
+    // first remove all the styles
+    removeActiveClass();
+    // check the active button
+    const activeBtn = document.getElementById(`btn-${id}`);
+    activeBtn.classList.add("active");
+
+
+    displayVideos(data.category);
+}
+
+// load details
+const loadDetails = async (videoId) => {
+
+    const res = await fetch(`https://openapi.programming-hero.com/api/phero-tube/video/${videoId}`)
+    const data = await res.json();
+
+    displayDetails(data.video)
+}
+// display details
+const displayDetails = (video) => {
+    const detailsContainer = document.getElementById('modal-content');
+
+
+
+    detailsContainer.innerHTML = `
+        <img class="w-full" src=${video.thumbnail} alt="">
+        <p>${video.description}</p>
+    `
+
+    // way-1
+    // document.getElementById('showModalData').click();
+
+    // way-2
+    document.getElementById('customModal').showModal();
+
+}
 
 
 const displayVideos = (videos) => {
 
     const videoContainer = document.getElementById('videos');
+    // in the beginning make the container empty
+    videoContainer.innerHTML = "";
+
+    if (videos.length === 0) {
+
+        videoContainer.classList.remove('grid');
+        videoContainer.innerHTML = `  
+            <div class="min-h-[400px] flex flex-col gap-5 justify-center items-center">
+                <img src="./assets/Icon.png" alt="">
+                <h2 class="font-bold">No Content available in this category.</h2>
+
+            </div> `
+        return;
+    }
+    else {
+        videoContainer.classList.add("grid");
+    }
 
     videos.map((video) => {
         console.log(video)
 
         const card = document.createElement('div');
-        card.classList = 'card border-2'
+        card.classList = 'card'
         card.innerHTML = `
         
         <figure class="h-[200px] relative">
             <img class="h-full w-full object-cover" src=${video.thumbnail} alt="video" />
 
-            <span class="absolute right-2 bottom-2 bg-gray-500 text-white p-1 rounded">${video.others.posted_date} </span>
+            ${video.others.posted_date.length === 0 ? "" : `<span class="absolute right-2 bottom-2 bg-gray-500 text-white p-1 rounded">${getTimeString(video.others.posted_date)} </span>`}
+
         </figure>
 
         <div class="flex gap-2 py-3">
@@ -90,6 +136,7 @@ const displayVideos = (videos) => {
 
                 </div>
                 <p class="text-gray-400">${video.others.views}</p>
+                <button onclick ="loadDetails('${video.video_id}')" class="btn btn-sm btn-error text-white">Details</button>
             </div>
 
         </div>
@@ -99,6 +146,39 @@ const displayVideos = (videos) => {
     })
 }
 
+// function to get the time string
+function getTimeString(time) {
+    const month = parseInt(time / (30 * 24 * 60 * 60)); // Approximate month
+    let remainingSec = time % (30 * 24 * 60 * 60);
+
+    const day = parseInt(remainingSec / (24 * 60 * 60));
+    remainingSec %= (24 * 60 * 60);
+
+    const hour = parseInt(remainingSec / (60 * 60));
+    remainingSec %= (60 * 60);
+
+    const minute = parseInt(remainingSec / 60);
+
+    if (month > 0) {
+        return `${month}mo ${day}d ${hour}h ${minute}m ago`;
+    } else if (day > 0) {
+        return `${day}d ${hour}h ${minute}m ago`;
+    } else if (hour > 0) {
+        return `${hour}h ${minute}m ago`;
+    } else {
+        return `${minute}m ago`;
+    }
+}
+
+//get all buttons to remove the styles 
+function removeActiveClass() {
+    const buttons = document.getElementsByClassName("category-btn");
+    // console.log(buttons)
+    for (const btn of buttons) {
+        // console.log(btn)
+        btn.classList.remove("active");
+    }
+}
 
 // global call to the loading functions
 loadCategories();
